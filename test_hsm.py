@@ -4,13 +4,11 @@ import random
 import numpy as np
 import hierarchical_softmax
 import time
-label_count=1000
-example_size=50
+label_count=2000
+example_size=500
 
 def create_data(label_count, example_size):
-
     the_examples_and_labels = []
-
     for l in range(label_count):
         base_example = []
         for i in range(example_size):
@@ -45,7 +43,7 @@ def load_data():
     return np.asarray(mini_example),np.asarray(mini_labels)
 
 def hsm(examples,labels):
- 
+
 
     #Hierarchical softmax test
     tree = hierarchical_softmax.build_binary_tree(range(label_count))
@@ -88,21 +86,21 @@ def normal_softmax(examples,labels):
     p_y_given_x = T.nnet.softmax(T.dot(input, W) + b)
     cost = T.mean(T.nnet.categorical_crossentropy(p_y_given_x,y))
     params = [W, b]
-    '''
+
     gparams = T.grad(cost,params)
     updates = [(param, param - learning_rate * gparam) for param, gparam in zip(params, gparams)]
     train_f = theano.function(inputs=[input, y],
                               outputs=[cost],
                               updates=updates)
-    '''
-    debug_f=theano.function(inputs=[input,y],outputs=cost)
+
+    #debug_f=theano.function(inputs=[input,y],outputs=cost)
 
 
     hc = []
     now=time.time()
     for i in range(10):
         for ex,lab in zip(examples,labels):
-            result=debug_f(ex,lab)
+            result=train_f(ex,lab)
             hc.append(result)
         #print np.mean(hc), i
     print "training time:", time.time()-now
@@ -110,4 +108,4 @@ def normal_softmax(examples,labels):
 if __name__=="__main__":
     examples,labels=load_data()
     normal_softmax(examples,labels)
-    hsm(examples,labels)
+    #hsm(examples,labels)
