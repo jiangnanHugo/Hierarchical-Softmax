@@ -74,16 +74,15 @@ def build_binary_tree(values):
 
     return layers
 
-class Hierarchical_Softmax_Layer(object):
+class HierarchicalSoftmaxLayer(object):
 
-    def __init__(self,x,y,maskY,shape,batch_size=None):
+    def __init__(self,x,y,maskY,shape):
 
         self.in_size,self.out_size=shape
         # in_size:size,mb_size=out_size
         self.x=x
         self.y=y
         self.maskY=maskY
-        self.batch_size=batch_size
         self.rng=np.random.RandomState(12345)
         self.tree=build_binary_tree(range(self.out_size))
         # Make route
@@ -182,17 +181,16 @@ class Hierarchical_Softmax_Layer(object):
 
         # 2.
         wp=self.wp_matrix[nodes]
+        self.wp=wp
 
         # feature.dimshuffle(0,1,'x',2)
 
         node=T.sum(wp * self.x.dimshuffle(0,1,'x',2),axis=-1)
 
 
-        log_sigmoid=- T.mean(T.log(T.nnet.sigmoid(node*choices))*mask ,axis=-1)
-        self.node=node
-        self.choices=choices
-        self.route_mask=mask
-        self.sig=T.log(T.nnet.sigmoid(node*choices))
+        log_sigmoid=T.mean(T.log(T.nnet.sigmoid(node*choices))*mask,axis=-1)
+
+
         cost=log_sigmoid*self.maskY   # matrix element-wise dot
         self.activation=cost.sum()/self.maskY.sum()
 
@@ -246,3 +244,6 @@ class Hierarchical_Softmax_Layer(object):
                 route.append((n_parent,parent_choice))
             parent=parent.parent
         return route
+
+
+
